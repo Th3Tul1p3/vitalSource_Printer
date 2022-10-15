@@ -1,9 +1,8 @@
-import PyPDF4
+from PyPDF4 import PdfFileMerger
 import pyautogui
 import os
 import sys
 from time import sleep, time
-import tkinter.filedialog as filedialog
 
 
 def make_vitalsource_active():
@@ -12,7 +11,6 @@ def make_vitalsource_active():
     :return: if not open, the program exit
     """
     if "VitalSource Bookshelf" in pyautogui.getAllTitles():
-        print(pyautogui.getAllTitles())
         if not pyautogui.getWindowsWithTitle("VitalSource Bookshelf")[0].isActive:
             print("window must be activated")
             pyautogui.getWindowsWithTitle("VitalSource Bookshelf")[0].activate()
@@ -21,7 +19,13 @@ def make_vitalsource_active():
         sys.exit()
 
 
-def print_and_save(start, end):
+def print_and_save(start: int, end: int, tmp_file: str):
+    """
+    make the keystrockes to print one or two pages with the given absolute path
+    :param start: number of first page
+    :param end: number of second page
+    :param tmp_file: absolute file path of destination
+    """
     make_vitalsource_active()
     pyautogui.hotkey('ctrl', 'p', interval=0.1)
     sleep(0.5)
@@ -33,33 +37,60 @@ def print_and_save(start, end):
     pyautogui.write(str(end))
     pyautogui.press('tab', interval=0.1)
     pyautogui.press('enter', interval=0.1)
-    sleep(20)
+    # wait until the printer window appear
+    while 'Printing - Print' not in pyautogui.getAllTitles():
+        sleep(5)
     pyautogui.press('tab', 4, interval=0.1)
     pyautogui.press('enter', interval=0.1)
-    pyautogui.write("C:\\Users\\ARNJ\\Documents\\vitalSource\\test_" + str(start) + '_' + str(end), interval=0.15)
+    sleep(0.5)
+    pyautogui.write(tmp_file, interval=0.05)
     sleep(0.5)
     pyautogui.press('enter', interval=0.1)
     sleep(0.5)
     pyautogui.press('escape', interval=0.1)
 
 
-def pdf_processor():
-    pass
+def pdf_processor(input_file: str, output_file: str):
+    """
+    merge the final pdf file and the new printed file together
+    :param input_file: the file to append
+    :param output_file: final pdf file
+    """
+    # strict = False -> To ignore PdfReadError - Illegal Character error
+    merger = PdfFileMerger(strict=False)
+    merger.append(fileobj=open(output_file, 'rb'))
+    merger.append(fileobj=open(input_file, 'rb'))
+    merger.write(fileobj=open(output_file, 'wb'))
+    merger.close()
 
 
 if __name__ == "__main__":
     start_time = time()  # used to pace the program
-    NumberStart = 15
+
+    # directory where we are doing all operations
+    # filedir = filedialog.askdirectory() + '//'
+    base_directory = "C:\\Users\\ARNJ\\Documents\\vitalSource"
+
+    tmp_pdf_file = base_directory + "\\tmp.pdf"
+    final_pdf_file = base_directory + "\\_cfi.pdf"
+
+    if not os.path.isdir(base_directory):
+        os.mkdir(base_directory)
+
+    NumberStart = 27
     NumberEnd = 2670
 
     for page in range(NumberStart, NumberEnd, 2):
-        print_and_save(page, page + 1)
-        sleep(7)
+        # print to pages, exept for the last one if odd
+        if page + 1 > NumberEnd:
+            print_and_save(page, page, tmp_pdf_file)
+        else:
+            print_and_save(page, page + 1, tmp_pdf_file)
 
-    filedir = filedialog.askdirectory() + '//'
+        sleep(5)  # let vitalSource breath a bit between 2 print
+        pdf_processor(tmp_pdf_file, final_pdf_file)
+        # for debug only, save a copy
+        os.rename(tmp_pdf_file, base_directory + "\\" + str(page + 1) + ".pdf")
 
-    # number_process()
-
-    elapsed_time = time() - start_time
     print("\nDone!")
-    print("This took " + "%.2f" % (elapsed_time / 3600) + " hours.")
+    print("This took " + "%.2f" % (time() - start_time / 3600) + " hours.")
