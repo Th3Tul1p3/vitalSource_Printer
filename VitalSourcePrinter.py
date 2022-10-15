@@ -18,7 +18,7 @@ def make_vitalsource_active():
         sys.exit()
 
 
-def print_and_save(start: int, end: int, tmp_file: str):
+def print_and_save(start: str, end: str, tmp_file: str):
     """
     make the keystrockes to print one or two pages with the given absolute path
     :param start: number of first page
@@ -29,16 +29,18 @@ def print_and_save(start: int, end: int, tmp_file: str):
     pyautogui.hotkey('ctrl', 'p', interval=0.1)
     sleep(0.5)
     pyautogui.hotkey('ctrl', 'a', interval=0.1)
-    pyautogui.write(str(start))
-    sleep(0.5)
+    pyautogui.write(start)
+    sleep(1)
     pyautogui.press('tab', interval=0.1)
     pyautogui.hotkey('ctrl', 'a', interval=0.1)
-    pyautogui.write(str(end))
+    pyautogui.write(end)
+    sleep(1)
     pyautogui.press('tab', interval=0.1)
     pyautogui.press('enter', interval=0.1)
     # wait until the printer window appear
     while 'Printing - Print' not in pyautogui.getAllTitles():
         sleep(3)
+    sleep(1)
     pyautogui.press('tab', 4, interval=0.1)
     pyautogui.press('enter', interval=0.1)
     sleep(0.5)
@@ -77,16 +79,16 @@ if __name__ == "__main__":
     if not os.path.isdir(base_directory):
         os.mkdir(base_directory)
 
-    NumberStart = 79
+    NumberStart = 181
     NumberEnd = 2670
     old_time = time() - start_time
 
     for page in range(NumberStart, NumberEnd, 2):
         # print to pages, except for the last one if odd
         if page + 1 > NumberEnd:
-            print_and_save(page, page, tmp_pdf_file)
+            print_and_save(str(page), str(page), tmp_pdf_file)
         else:
-            print_and_save(page, page + 1, tmp_pdf_file)
+            print_and_save(str(page), str(page + 1), tmp_pdf_file)
 
         sleep(4)  # let vitalSource breath a bit between 2 print
         pdf_processor(tmp_pdf_file, final_pdf_file)
