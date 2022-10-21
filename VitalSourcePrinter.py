@@ -1,4 +1,4 @@
-from tkinter import filedialog
+from tkinter import filedialog, simpledialog
 from PyPDF4 import PdfFileMerger
 import pyautogui
 import os
@@ -16,6 +16,7 @@ def make_vitalsource_active():
             pyautogui.getWindowsWithTitle("VitalSource Bookshelf")[0].activate()
         pyautogui.getWindowsWithTitle("VitalSource Bookshelf")[0].maximize()
     else:
+        print("VitalSource is not open...")
         sys.exit()
 
 
@@ -68,13 +69,24 @@ def pdf_processor(input_file: str, output_file: str):
     merger.close()
 
 
+def str_input(title, prompt, default='_cfi.pdf'):
+    """
+    Ask the name of printed files
+    :param title: Name of window
+    :param prompt: The question
+    :param default: default filename
+    :return: the filename
+    """
+    return simpledialog.askstring(title, prompt, initialvalue=default)
+
+
 if __name__ == "__main__":
     start_time = time()  # used to pace the program
-
+    test = str_input("Target file", "Enter a target file for pdf: ")
     # directory where we are doing all operations
-    base_directory = filedialog.askdirectory() + '//'
-    tmp_pdf_file = base_directory + "\\tmp.pdf"
-    final_pdf_file = base_directory + "\\_cfi.pdf"
+    base_directory = (filedialog.askdirectory() + '/').replace('/', '\\')
+    tmp_pdf_file = base_directory + "tmp.pdf"
+    final_pdf_file = base_directory + "_cfi.pdf"
 
     if not os.path.isdir(base_directory):
         os.mkdir(base_directory)
