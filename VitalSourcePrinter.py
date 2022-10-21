@@ -1,3 +1,4 @@
+from tkinter import filedialog
 from PyPDF4 import PdfFileMerger
 import pyautogui
 import os
@@ -30,11 +31,11 @@ def print_and_save(start: str, end: str, tmp_file: str):
     sleep(0.5)
     pyautogui.hotkey('ctrl', 'a', interval=0.1)
     pyautogui.write(start)
-    sleep(1)
+    sleep(1.5)
     pyautogui.press('tab', interval=0.1)
     pyautogui.hotkey('ctrl', 'a', interval=0.1)
     pyautogui.write(end)
-    sleep(1)
+    sleep(1.5)
     pyautogui.press('tab', interval=0.1)
     pyautogui.press('enter', interval=0.1)
     # wait until the printer window appear
@@ -43,8 +44,8 @@ def print_and_save(start: str, end: str, tmp_file: str):
     sleep(1)
     pyautogui.press('tab', 4, interval=0.1)
     pyautogui.press('enter', interval=0.1)
-    sleep(0.5)
-    pyautogui.write(tmp_file)
+    sleep(1)
+    pyautogui.write(tmp_file, interval=0.05)
     sleep(0.5)
     pyautogui.press('enter', interval=0.1)
     sleep(0.5)
@@ -71,17 +72,16 @@ if __name__ == "__main__":
     start_time = time()  # used to pace the program
 
     # directory where we are doing all operations
-    # filedir = filedialog.askdirectory() + '//'
-    base_directory = "C:\\Users\\ARNJ\\Documents\\vitalSource"
+    base_directory = filedialog.askdirectory() + '//'
     tmp_pdf_file = base_directory + "\\tmp.pdf"
     final_pdf_file = base_directory + "\\_cfi.pdf"
 
     if not os.path.isdir(base_directory):
         os.mkdir(base_directory)
 
-    NumberStart = 181
+    NumberStart = 1455
     NumberEnd = 2670
-    old_time = time() - start_time
+    counter = 0
 
     for page in range(NumberStart, NumberEnd, 2):
         # print to pages, except for the last one if odd
@@ -94,8 +94,9 @@ if __name__ == "__main__":
         pdf_processor(tmp_pdf_file, final_pdf_file)
         # remove the tmp file
         os.remove(tmp_pdf_file)
-        print("for two pages: " + "%.2f" % (time() - start_time - old_time) + " sec")
-        old_time = time() - start_time
+        counter += 1
+        print("Average by print: " + "%.2f" % ((time() - start_time) / counter) + " sec")
+        print("Pages: ", str(page), str(page + 1), "Successfully printed.")
 
     print("\nDone!")
     print("This took " + "%.2f" % (time() - start_time / 3600) + " hours.")
