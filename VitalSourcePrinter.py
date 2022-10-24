@@ -1,9 +1,10 @@
+import tkinter
 from tkinter import filedialog, simpledialog
 from PyPDF4 import PdfFileMerger
 import pyautogui
 import os
 import sys
-from time import sleep, time
+from time import sleep
 
 
 def make_vitalsource_active():
@@ -32,16 +33,16 @@ def print_and_save(start: str, end: str, tmp_file: str):
     sleep(0.5)
     pyautogui.hotkey('ctrl', 'a', interval=0.1)
     pyautogui.write(start)
-    sleep(1.5)
+    sleep(2)
     pyautogui.press('tab', interval=0.1)
     pyautogui.hotkey('ctrl', 'a', interval=0.1)
     pyautogui.write(end)
-    sleep(1.5)
+    sleep(2)
     pyautogui.press('tab', interval=0.1)
     pyautogui.press('enter', interval=0.1)
     # wait until the printer window appear
     while 'Printing - Print' not in pyautogui.getAllTitles():
-        sleep(3)
+        sleep(2)
     sleep(1)
     pyautogui.press('tab', 4, interval=0.1)
     pyautogui.press('enter', interval=0.1)
@@ -77,23 +78,42 @@ def str_input(title, prompt, default='_cfi.pdf'):
     :param default: default filename
     :return: the filename
     """
-    return simpledialog.askstring(title, prompt, initialvalue=default)
+    root = tkinter.Tk()
+    root.withdraw()
+    return simpledialog.askstring(title, prompt + "\t\t\t", initialvalue=default)
+
+
+def pages_input(default_start=2625, default_end=2670):
+    """
+    Ask the range of pages to print
+    :param default_start: where we start to print
+    :param default_end:  where we end the print
+    :return: the range that the user enter
+    """
+    root = tkinter.Tk()
+    root.withdraw()
+    start = simpledialog.askinteger("Pages range",
+                                    "Please, enter the start of the range:\t\t\t",
+                                    initialvalue=default_start)
+    end = simpledialog.askinteger("Pages range",
+                                  "Please, enter the end of the range:\t\t\t",
+                                  initialvalue=default_end)
+    return start, end
 
 
 if __name__ == "__main__":
-    start_time = time()  # used to pace the program
-    test = str_input("Target file", "Enter a target file for pdf: ")
+    target_file = str_input("Target file", "Enter a target file for pdf: ")
     # directory where we are doing all operations
     base_directory = (filedialog.askdirectory() + '/').replace('/', '\\')
     tmp_pdf_file = base_directory + "tmp.pdf"
-    final_pdf_file = base_directory + "_cfi.pdf"
+    final_pdf_file = base_directory + target_file
 
     if not os.path.isdir(base_directory):
         os.mkdir(base_directory)
 
-    NumberStart = 1455
+    #NumberStart, NumberEnd = pages_input()
+    NumberStart = 2625
     NumberEnd = 2670
-    counter = 0
 
     for page in range(NumberStart, NumberEnd, 2):
         # print to pages, except for the last one if odd
@@ -106,9 +126,6 @@ if __name__ == "__main__":
         pdf_processor(tmp_pdf_file, final_pdf_file)
         # remove the tmp file
         os.remove(tmp_pdf_file)
-        counter += 1
-        print("Average by print: " + "%.2f" % ((time() - start_time) / counter) + " sec")
         print("Pages: ", str(page), str(page + 1), "Successfully printed.")
 
     print("\nDone!")
-    print("This took " + "%.2f" % (time() - start_time / 3600) + " hours.")
