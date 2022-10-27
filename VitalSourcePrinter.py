@@ -111,9 +111,7 @@ if __name__ == "__main__":
     if not os.path.isdir(base_directory):
         os.mkdir(base_directory)
 
-    #NumberStart, NumberEnd = pages_input()
-    NumberStart = 2625
-    NumberEnd = 2670
+    NumberStart, NumberEnd = pages_input()
 
     for page in range(NumberStart, NumberEnd, 2):
         # print to pages, except for the last one if odd
